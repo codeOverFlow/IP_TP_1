@@ -1,33 +1,36 @@
-# var & param
-    param t; # nb of periods
-    set T := 1..t; # index of periods
+# var and param
+	param n;
+	set N := 1..n;
 
-    param d{T}; # demand
-    param p{T}; # production cost
-    param h{T}; # storage cost
-    param f{T}; # fixed production cost
-    param M{T};
-    
-    var x{T}, integer, >= 0; # nb of producted units
-    var y{T}, >= 0, <= 1; # 0 if not open, 1 otherwise  RELAXED
-    #var y{T}, binary;
-    var s{T}, integer, >= 0; # nb of stored units
-    var w{T,T}, >= 0;
+	param p{N};
+	param f{N};
+	param d{N};
+	param h{N};
+	
+	var x{N}, integer, >= 0;
+	var s{N}, integer, >= 0;
+	var y{N}, <= 1, >= 0;
+	var w{N,N}, >= 0;
 
+# objective
+	minimize z : sum{t in N}(p[t]*x[t] + h[t]*s[t] + f[t]*y[t]);
 
-# function
-    minimize z: sum{n in T}(p[n]*x[n]+f[n]*y[n]+s[n]*h[n]);
-
-# constraints
-    s.t. c1 : w[1,1] = 3;
-    s.t. c1 : w[1,2] + w[2,2] = 5;
-    s.t. c1 : w[1,3] + w[2,3] + w[3,3] = 6;
-    s.t. c1 : w[1,4] + w[2,4] + w[3,4] + w[4,4] = 3;
-    s.t. c1 : w[1,5] + w[2,5] + w[3,5] + w[4,5] + w[5,5]= 8;
+	s.t. c1{j in N}: sum{i in 1..j}(w[i,j]) = d[j];
+	s.t. c2{i in N, j in i..n}: w[i,j] <= d[j]*y[i];
+	s.t. c3{i in N}: x[i] = sum{j in i..n}(w[i,j]);
+	s.t. c4: s[1] = x[1]-3;
+	s.t. c5: s[2] = x[1]+x[2]-8;
+	s.t. c6: s[3] = x[1]+x[2]+x[3]-14;
+	s.t. c7: s[4] = x[1]+x[2]+x[3]+x[4]-17;
 
 
-solve;
-display z;
-display x;
-display y;
-display s;
+
+
+
+	solve;
+	display z;
+	display x;
+	display s;
+	display y;
+
+end;
